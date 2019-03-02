@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 from sklearn.datasets import make_blobs
+import h5py
 #logging.basicConfig(level=logging.INFO)
 logging.basicConfig(level=logging.DEBUG)
 
@@ -13,15 +14,9 @@ class DataHandler:
 
 	def loadData(self, filename):
 		logging.info("Loading data from " + filename )
-		#limit = 1000 ## for debnugging. TODO: remove this
-		lines = open(filename).readlines()#[:limit] 
-		self.data = []
-		self.words = []
-		for line in lines:
-			tokens = line.strip().split()
-			self.words.append(tokens[0])
-			self.data.append([float(i) for i in tokens[1:]])
-		self.data = np.array(self.data)
+		with h5py.File(filename) as f:
+			self.words = f['words'][()]
+			self.data = f['vectors'][()]
 		logging.info("Loaded data. #shape = " + str(self.data.shape) )
 		logging.info(" #words = %d " %(len(self.words)) )
 		self.data_size = self.data.shape[0]

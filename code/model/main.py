@@ -8,6 +8,7 @@ from model import SPINEModel
 from random import shuffle
 import numpy as np
 import logging
+import h5py
 logging.basicConfig(level=logging.INFO)
 
 
@@ -68,7 +69,7 @@ class Solver:
 		if use_cuda:
 			self.model.cuda()
 			self.dtype = torch.cuda.FloatTensor
-		self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.1)
+		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.1)
 		logging.info("="*41)
 
 
@@ -93,7 +94,7 @@ class Solver:
 				epoch_losses[1]+=asl_loss.data[0]
 				epoch_losses[2]+=psl_loss.data[0]
 				epoch_losses[3]+=loss.data[0]
-			print("After epoch %r, Reconstruction Loss = %.4f, ASL = %.4f,"\
+			print("After epoch %r, Reconstruction Loss = %.4f, ASL = %.4f, "\
 						"PSL = %.4f, and total = %.4f"
 						%(iteration+1, epoch_losses[0], epoch_losses[1], epoch_losses[2], epoch_losses[3]) )
 			#logging.info("After epoch %r, Sparsity = %.1f"
@@ -131,9 +132,11 @@ def main():
 	logging.info("Dumping the final SPine embeddings")
 	output_path = params['output'] #+ ".spine"
 	final_batch_size = 512
-	spine_embeddings = solver.getSpineEmbeddings(final_batch_size, params)
-	utils.dump_vectors(spine_embeddings, output_path, solver.getWordsList())
-
+	with h5py.File(output_path, 'w') as f:
+		words = solver.getWordsList()
+		vectors = solver.getSpineEmbeddings(final_batch_size, params)
+		f.create_dataset('words', data=words, dtype=h5py.special_dtype(vlen=str), compression='gzip')
+		f.create_dataset('vectors', data=vectors, compression='gzip')
 
 if __name__ == '__main__':
 	main()
