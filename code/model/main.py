@@ -69,8 +69,7 @@ class Solver:
 		self.dtype = torch.FloatTensor
 		use_cuda = torch.cuda.is_available()
 		if use_cuda:
-			gpu_idx = params['gpu_idx']
-			self.model.cuda(f'cuda:{gpu_idx}')
+			self.model.cuda()
 			self.dtype = torch.cuda.FloatTensor
 		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.1)
 		logging.info("="*41)
@@ -128,8 +127,9 @@ def main():
 	params = vars(parser.parse_args())
 	logging.info("PARAMS = " + str(params))
 	logging.info("="*41)
-	solver = Solver(params)
-	solver.train(params)
+	with torch.cuda.device(params['gpu_idx']):
+		solver = Solver(params)
+		solver.train(params)
 		
 	# dumping the final vectors
 	logging.info("Dumping the final SPine embeddings")
