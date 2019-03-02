@@ -49,6 +49,8 @@ parser.add_argument('--output', dest='output',
 					default = "data/glove.6B.300d.txt.spine" ,
                     help='output')
 
+parser.add_argument('--gpu_idx', dest='gpu_idx', default=0, type=int, help='The index of GPU to use')
+
 #########################################################
 
 class Solver:
@@ -67,7 +69,8 @@ class Solver:
 		self.dtype = torch.FloatTensor
 		use_cuda = torch.cuda.is_available()
 		if use_cuda:
-			self.model.cuda()
+			gpu_idx = params['gpu_idx']
+			self.model.cuda(f'cuda:{gpu_idx}')
 			self.dtype = torch.cuda.FloatTensor
 		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.1)
 		logging.info("="*41)
@@ -90,10 +93,10 @@ class Solver:
 				reconstruction_loss, psl_loss, asl_loss = loss_terms
 				loss.backward()
 				optimizer.step()
-				epoch_losses[0]+=reconstruction_loss.data[0]
-				epoch_losses[1]+=asl_loss.data[0]
-				epoch_losses[2]+=psl_loss.data[0]
-				epoch_losses[3]+=loss.data[0]
+				epoch_losses[0]+=reconstruction_loss.data.item()
+				epoch_losses[1]+=asl_loss.data.item()
+				epoch_losses[2]+=psl_loss.data.item()
+				epoch_losses[3]+=loss.data.item()
 			print("After epoch %r, Reconstruction Loss = %.4f, ASL = %.4f, "\
 						"PSL = %.4f, and total = %.4f"
 						%(iteration+1, epoch_losses[0], epoch_losses[1], epoch_losses[2], epoch_losses[3]) )
