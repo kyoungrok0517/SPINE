@@ -72,6 +72,7 @@ class Solver:
 			self.model.cuda()
 			self.dtype = torch.cuda.FloatTensor
 		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.1)
+		# self.optimizer = torch.optim.Adam(self.model.parameters())
 		logging.info("="*41)
 
 
