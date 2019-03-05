@@ -8,6 +8,8 @@ import time
 import sys
 import os
 from tqdm import tqdm
+import hdf5
+from collections import defaultdict
 
 top_k_words = []
 zeros = 0.0
@@ -18,6 +20,13 @@ vectors = {}
 num = 5
 width = 10
 
+def load_vectors_hdf5(filename):
+  global vectors, dimensions, zeros, h_dim, total, top_k_words
+  with hdf5.File(filename) as f:
+    words, vectors = f['words'], f['vectors']
+    dimension = f['vectors'][0].shape[1]
+    top_k_words = [ [] for i in range(dimension)]
+    vectors = {word: vectors[i] for i, word in enumerate(words)}
 
 def load_vectors(filename):
     global vectors, dimensions, zeros, h_dim, total, top_k_words
